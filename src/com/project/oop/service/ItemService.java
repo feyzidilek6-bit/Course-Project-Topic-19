@@ -19,7 +19,9 @@ public class ItemService {
             System.out.println("\n=== MENU ===");
             System.out.println("1. Add item");
             System.out.println("2. Show items");
-            System.out.println("3. Exit");
+            System.out.println("3. Delete item");
+            System.out.println("4. Search item");
+            System.out.println("5. Exit");
 
             System.out.print("Choose option: ");
             int choice = scanner.nextInt();
@@ -36,6 +38,14 @@ public class ItemService {
                     break;
 
                 case 3:
+                    deleteItem();
+                    break;
+
+                case 4:
+                    searchItem();
+                    break;
+
+                case 5:
                     running = false;
                     System.out.println("System stopped.");
                     break;
@@ -43,7 +53,6 @@ public class ItemService {
                 default:
                     System.out.println("Invalid option.");
             }
-
         }
     }
 
@@ -78,6 +87,36 @@ public class ItemService {
         for (Item item : items) {
             System.out.println(item.getId() + " - " + item.getName());
         }
+    }
 
+    private void deleteItem() {
+
+        System.out.print("Enter item id to delete: ");
+        int id = scanner.nextInt();
+        scanner.nextLine();
+
+        boolean removed = items.removeIf(item -> item.getId() == id);
+
+        if (removed) {
+            System.out.println("Item deleted.");
+        } else {
+            System.out.println("Item not found.");
+        }
+    }
+
+    private void searchItem() {
+
+        System.out.print("Enter item id to search: ");
+        int id = scanner.nextInt();
+        scanner.nextLine();
+
+        for (Item item : items) {
+            if (item.getId() == id) {
+                System.out.println("Found: " + item.getId() + " - " + item.getName());
+                return;
+            }
+        }
+
+        System.out.println("Item not found.");
     }
 }
