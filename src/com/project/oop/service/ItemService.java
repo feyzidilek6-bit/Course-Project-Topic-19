@@ -21,7 +21,8 @@ public class ItemService {
             System.out.println("2. Show items");
             System.out.println("3. Delete item");
             System.out.println("4. Search item");
-            System.out.println("5. Exit");
+            System.out.println("5. Edit item");
+            System.out.println("6. Exit");
 
             System.out.print("Choose option: ");
             int choice = scanner.nextInt();
@@ -46,6 +47,10 @@ public class ItemService {
                     break;
 
                 case 5:
+                    editItem();
+                    break;
+
+                case 6:
                     running = false;
                     System.out.println("System stopped.");
                     break;
@@ -113,6 +118,26 @@ public class ItemService {
         for (Item item : items) {
             if (item.getId() == id) {
                 System.out.println("Found: " + item.getId() + " - " + item.getName());
+                return;
+            }
+        }
+
+        System.out.println("Item not found.");
+    }
+
+    private void editItem() {
+
+        System.out.print("Enter item id to edit: ");
+        int id = scanner.nextInt();
+        scanner.nextLine();
+
+        for (Item item : items) {
+            if (item.getId() == id) {
+                System.out.print("Enter new item name: ");
+                String newName = scanner.nextLine();
+
+                item.setName(newName);
+                System.out.println("Item updated successfully!");
                 return;
             }
         }
