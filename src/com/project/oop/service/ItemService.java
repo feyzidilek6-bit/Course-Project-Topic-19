@@ -67,12 +67,26 @@ public class ItemService {
         int id = scanner.nextInt();
         scanner.nextLine();
 
+        if (itemExists(id)) {
+            System.out.println("Item with this id already exists.");
+            return;
+        }
+
         System.out.print("Enter item name: ");
         String name = scanner.nextLine();
 
         addItem(id, name);
 
         System.out.println("Item added successfully!");
+    }
+
+    private boolean itemExists(int id) {
+        for (Item item : items) {
+            if (item.getId() == id) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public void addItem(int id, String name) {
