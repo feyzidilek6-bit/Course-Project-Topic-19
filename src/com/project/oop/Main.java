@@ -1,15 +1,14 @@
 package com.project.oop;
 
-import com.project.oop.service.ItemService;
+import com.project.oop.service.TuringMachineService;
 
 public class Main {
 
     public static void main(String[] args) {
 
-        System.out.println("=== Course Project System ===");
+        System.out.println("=== Turing Machine Project ===");
 
-        ItemService service = new ItemService();
+        TuringMachineService service = new TuringMachineService();
         service.start();
-
     }
 }
