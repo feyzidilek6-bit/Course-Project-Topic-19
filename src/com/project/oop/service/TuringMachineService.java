@@ -2,6 +2,7 @@ package com.project.oop.service;
 
 import java.util.Scanner;
 import com.project.oop.model.State;
+import com.project.oop.model.Transition;
 import com.project.oop.model.TuringMachine;
 
 public class TuringMachineService {
@@ -14,11 +15,13 @@ public class TuringMachineService {
         boolean running = true;
 
         while (running) {
+
             System.out.println("\n=== MENU ===");
             System.out.println("1. Create new Turing machine");
             System.out.println("2. Add state");
-            System.out.println("3. Show machine");
-            System.out.println("4. Exit");
+            System.out.println("3. Add transition");
+            System.out.println("4. Show machine");
+            System.out.println("5. Exit");
 
             System.out.print("Choose option: ");
             int choice = scanner.nextInt();
@@ -32,9 +35,12 @@ public class TuringMachineService {
                     addState();
                     break;
                 case 3:
-                    showMachine();
+                    addTransition();
                     break;
                 case 4:
+                    showMachine();
+                    break;
+                case 5:
                     running = false;
                     System.out.println("System stopped.");
                     break;
@@ -74,6 +80,33 @@ public class TuringMachineService {
         System.out.println("State added successfully.");
     }
 
+    private void addTransition() {
+        if (machine == null) {
+            System.out.println("Create a machine first.");
+            return;
+        }
+
+        System.out.print("From state: ");
+        String fromState = scanner.nextLine();
+
+        System.out.print("Read symbol: ");
+        char readSymbol = scanner.nextLine().charAt(0);
+
+        System.out.print("Write symbol: ");
+        char writeSymbol = scanner.nextLine().charAt(0);
+
+        System.out.print("Direction (L/R): ");
+        char direction = scanner.nextLine().charAt(0);
+
+        System.out.print("To state: ");
+        String toState = scanner.nextLine();
+
+        Transition transition = new Transition(fromState, readSymbol, writeSymbol, direction, toState);
+        machine.addTransition(transition);
+
+        System.out.println("Transition added successfully.");
+    }
+
     private void showMachine() {
         if (machine == null) {
             System.out.println("No machine created.");
@@ -81,13 +114,24 @@ public class TuringMachineService {
         }
 
         System.out.println("Machine name: " + machine.getName());
-        System.out.println("States:");
 
+        System.out.println("States:");
         for (State state : machine.getStates()) {
             System.out.println(
                     state.getName()
                             + " | start: " + state.isStartState()
                             + " | final: " + state.isFinalState()
+            );
+        }
+
+        System.out.println("Transitions:");
+        for (Transition transition : machine.getTransitions()) {
+            System.out.println(
+                    transition.getFromState()
+                            + " --(" + transition.getReadSymbol()
+                            + "/" + transition.getWriteSymbol()
+                            + "," + transition.getDirection()
+                            + ")--> " + transition.getToState()
             );
         }
     }
