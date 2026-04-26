@@ -3,6 +3,7 @@ package com.project.oop.service;
 import java.util.Scanner;
 import com.project.oop.model.State;
 import com.project.oop.model.Transition;
+import com.project.oop.model.Tape;
 import com.project.oop.model.TuringMachine;
 
 public class TuringMachineService {
@@ -21,7 +22,8 @@ public class TuringMachineService {
             System.out.println("2. Add state");
             System.out.println("3. Add transition");
             System.out.println("4. Show machine");
-            System.out.println("5. Exit");
+            System.out.println("5. Run machine");
+            System.out.println("6. Exit");
 
             System.out.print("Choose option: ");
             int choice = scanner.nextInt();
@@ -41,6 +43,9 @@ public class TuringMachineService {
                     showMachine();
                     break;
                 case 5:
+                    runMachine();
+                    break;
+                case 6:
                     running = false;
                     System.out.println("System stopped.");
                     break;
@@ -134,5 +139,70 @@ public class TuringMachineService {
                             + ")--> " + transition.getToState()
             );
         }
+    }
+
+    private void runMachine() {
+
+        if (machine == null) {
+            System.out.println("Create a machine first.");
+            return;
+        }
+
+        System.out.print("Enter input string: ");
+        String input = scanner.nextLine();
+
+        Tape tape = new Tape(input);
+
+        if (machine.getStates().isEmpty()) {
+            System.out.println("No states defined.");
+            return;
+        }
+
+        State currentState = machine.getStates().get(0);
+
+        System.out.println("Starting machine...");
+
+        for (int step = 0; step < 10; step++) {
+
+            char currentSymbol = tape.readSymbol();
+            boolean found = false;
+
+            for (Transition t : machine.getTransitions()) {
+
+                if (t.getFromState().equals(currentState.getName())
+                        && t.getReadSymbol() == currentSymbol) {
+
+                    tape.writeSymbol(t.getWriteSymbol());
+
+                    if (t.getDirection() == 'R') {
+                        tape.moveRight();
+                    } else {
+                        tape.moveLeft();
+                    }
+
+                    currentState = findState(t.getToState());
+                    found = true;
+                    break;
+                }
+            }
+
+            if (!found) {
+                System.out.println("No transition found. Machine stopped.");
+                break;
+            }
+
+            System.out.println("Step " + step + ": " + tape.getTapeContent());
+        }
+
+        System.out.println("Final tape: " + tape.getTapeContent());
+    }
+
+    private State findState(String name) {
+        for (State state : machine.getStates()) {
+            if (state.getName().equals(name)) {
+                return state;
+            }
+        }
+        return null;
     }
 }
