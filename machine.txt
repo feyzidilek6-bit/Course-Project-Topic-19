@@ -1,0 +1,4 @@
+MACHINE:TestMachine
+STATE:q0,true,false
+STATE:q1,false,true
+TRANSITION:q0,1,0,R,q1

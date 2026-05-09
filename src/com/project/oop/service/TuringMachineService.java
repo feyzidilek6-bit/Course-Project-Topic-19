@@ -1,6 +1,9 @@
 package com.project.oop.service;
 
+import java.io.File;
+import java.io.PrintWriter;
 import java.util.Scanner;
+
 import com.project.oop.model.State;
 import com.project.oop.model.Transition;
 import com.project.oop.model.Tape;
@@ -17,13 +20,16 @@ public class TuringMachineService {
 
         while (running) {
 
-            System.out.println("\n=== MENU ===");
+            System.out.println("\n=== TURING MACHINE MENU ===");
             System.out.println("1. Create new Turing machine");
             System.out.println("2. Add state");
             System.out.println("3. Add transition");
             System.out.println("4. Show machine");
             System.out.println("5. Run machine");
-            System.out.println("6. Exit");
+            System.out.println("6. Save machine");
+            System.out.println("7. Load machine");
+            System.out.println("8. Help");
+            System.out.println("9. Exit");
 
             System.out.print("Choose option: ");
             int choice = scanner.nextInt();
@@ -46,6 +52,15 @@ public class TuringMachineService {
                     runMachine();
                     break;
                 case 6:
+                    saveMachine();
+                    break;
+                case 7:
+                    loadMachine();
+                    break;
+                case 8:
+                    showHelp();
+                    break;
+                case 9:
                     running = false;
                     System.out.println("System stopped.");
                     break;
@@ -79,9 +94,7 @@ public class TuringMachineService {
         boolean isFinal = scanner.nextBoolean();
         scanner.nextLine();
 
-        State state = new State(name, isStart, isFinal);
-        machine.addState(state);
-
+        machine.addState(new State(name, isStart, isFinal));
         System.out.println("State added successfully.");
     }
 
@@ -101,14 +114,12 @@ public class TuringMachineService {
         char writeSymbol = scanner.nextLine().charAt(0);
 
         System.out.print("Direction (L/R): ");
-        char direction = scanner.nextLine().charAt(0);
+        char direction = scanner.nextLine().toUpperCase().charAt(0);
 
         System.out.print("To state: ");
         String toState = scanner.nextLine();
 
-        Transition transition = new Transition(fromState, readSymbol, writeSymbol, direction, toState);
-        machine.addTransition(transition);
-
+        machine.addTransition(new Transition(fromState, readSymbol, writeSymbol, direction, toState));
         System.out.println("Transition added successfully.");
     }
 
@@ -118,33 +129,35 @@ public class TuringMachineService {
             return;
         }
 
-        System.out.println("Machine name: " + machine.getName());
+        System.out.println("\nMachine name: " + machine.getName());
 
         System.out.println("States:");
         for (State state : machine.getStates()) {
-            System.out.println(
-                    state.getName()
-                            + " | start: " + state.isStartState()
-                            + " | final: " + state.isFinalState()
-            );
+            System.out.println(state.getName()
+                    + " | start: " + state.isStartState()
+                    + " | final: " + state.isFinalState());
         }
 
         System.out.println("Transitions:");
         for (Transition transition : machine.getTransitions()) {
-            System.out.println(
-                    transition.getFromState()
-                            + " --(" + transition.getReadSymbol()
-                            + "/" + transition.getWriteSymbol()
-                            + "," + transition.getDirection()
-                            + ")--> " + transition.getToState()
-            );
+            System.out.println(transition.getFromState()
+                    + " --(" + transition.getReadSymbol()
+                    + "/" + transition.getWriteSymbol()
+                    + "," + transition.getDirection()
+                    + ")--> " + transition.getToState());
         }
     }
 
     private void runMachine() {
-
         if (machine == null) {
             System.out.println("Create a machine first.");
+            return;
+        }
+
+        State currentState = findStartState();
+
+        if (currentState == null) {
+            System.out.println("No start state defined.");
             return;
         }
 
@@ -153,48 +166,54 @@ public class TuringMachineService {
 
         Tape tape = new Tape(input);
 
-        if (machine.getStates().isEmpty()) {
-            System.out.println("No states defined.");
-            return;
-        }
-
-        State currentState = machine.getStates().get(0);
-
         System.out.println("Starting machine...");
 
-        for (int step = 0; step < 10; step++) {
+        int step = 0;
+        int maxSteps = 100;
+
+        while (!currentState.isFinalState() && step < maxSteps) {
 
             char currentSymbol = tape.readSymbol();
-            boolean found = false;
+            Transition transition = findTransition(currentState.getName(), currentSymbol);
 
-            for (Transition t : machine.getTransitions()) {
-
-                if (t.getFromState().equals(currentState.getName())
-                        && t.getReadSymbol() == currentSymbol) {
-
-                    tape.writeSymbol(t.getWriteSymbol());
-
-                    if (t.getDirection() == 'R') {
-                        tape.moveRight();
-                    } else {
-                        tape.moveLeft();
-                    }
-
-                    currentState = findState(t.getToState());
-                    found = true;
-                    break;
-                }
-            }
-
-            if (!found) {
+            if (transition == null) {
                 System.out.println("No transition found. Machine stopped.");
                 break;
             }
 
+            tape.writeSymbol(transition.getWriteSymbol());
+
+            if (transition.getDirection() == 'R') {
+                tape.moveRight();
+            } else if (transition.getDirection() == 'L') {
+                tape.moveLeft();
+            }
+
+            currentState = findState(transition.getToState());
+
+            if (currentState == null) {
+                System.out.println("Target state not found. Machine stopped.");
+                break;
+            }
+
+            step++;
             System.out.println("Step " + step + ": " + tape.getTapeContent());
         }
 
+        if (currentState != null && currentState.isFinalState()) {
+            System.out.println("Machine reached final state: " + currentState.getName());
+        }
+
         System.out.println("Final tape: " + tape.getTapeContent());
+    }
+
+    private State findStartState() {
+        for (State state : machine.getStates()) {
+            if (state.isStartState()) {
+                return state;
+            }
+        }
+        return null;
     }
 
     private State findState(String name) {
@@ -204,5 +223,103 @@ public class TuringMachineService {
             }
         }
         return null;
+    }
+
+    private Transition findTransition(String stateName, char symbol) {
+        for (Transition transition : machine.getTransitions()) {
+            if (transition.getFromState().equals(stateName)
+                    && transition.getReadSymbol() == symbol) {
+                return transition;
+            }
+        }
+        return null;
+    }
+
+    private void saveMachine() {
+        if (machine == null) {
+            System.out.println("No machine to save.");
+            return;
+        }
+
+        System.out.print("Enter file name: ");
+        String fileName = scanner.nextLine();
+
+        try {
+            PrintWriter writer = new PrintWriter(fileName);
+
+            writer.println("MACHINE:" + machine.getName());
+
+            for (State state : machine.getStates()) {
+                writer.println("STATE:" + state.getName() + "," + state.isStartState() + "," + state.isFinalState());
+            }
+
+            for (Transition transition : machine.getTransitions()) {
+                writer.println("TRANSITION:"
+                        + transition.getFromState() + ","
+                        + transition.getReadSymbol() + ","
+                        + transition.getWriteSymbol() + ","
+                        + transition.getDirection() + ","
+                        + transition.getToState());
+            }
+
+            writer.close();
+            System.out.println("Machine saved successfully.");
+
+        } catch (Exception e) {
+            System.out.println("Error while saving machine.");
+        }
+    }
+
+    private void loadMachine() {
+        System.out.print("Enter file name: ");
+        String fileName = scanner.nextLine();
+
+        try {
+            File file = new File(fileName);
+            Scanner fileScanner = new Scanner(file);
+
+            while (fileScanner.hasNextLine()) {
+                String line = fileScanner.nextLine();
+
+                if (line.startsWith("MACHINE:")) {
+                    String name = line.substring(8);
+                    machine = new TuringMachine(name);
+                } else if (line.startsWith("STATE:")) {
+                    String[] parts = line.substring(6).split(",");
+                    machine.addState(new State(
+                            parts[0],
+                            Boolean.parseBoolean(parts[1]),
+                            Boolean.parseBoolean(parts[2])
+                    ));
+                } else if (line.startsWith("TRANSITION:")) {
+                    String[] parts = line.substring(11).split(",");
+                    machine.addTransition(new Transition(
+                            parts[0],
+                            parts[1].charAt(0),
+                            parts[2].charAt(0),
+                            parts[3].charAt(0),
+                            parts[4]
+                    ));
+                }
+            }
+
+            fileScanner.close();
+            System.out.println("Machine loaded successfully.");
+
+        } catch (Exception e) {
+            System.out.println("Error while loading machine.");
+        }
+    }
+
+    private void showHelp() {
+        System.out.println("\nHelp:");
+        System.out.println("1 - Create a new Turing machine");
+        System.out.println("2 - Add a state");
+        System.out.println("3 - Add a transition");
+        System.out.println("4 - Show current machine");
+        System.out.println("5 - Run machine with input string");
+        System.out.println("6 - Save machine to file");
+        System.out.println("7 - Load machine from file");
+        System.out.println("9 - Exit");
     }
 }
