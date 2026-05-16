@@ -1,0 +1,3 @@
+MACHINE:TestMachine
+STATE:q0,true,false,false
+STATE:q1,false,true,false
