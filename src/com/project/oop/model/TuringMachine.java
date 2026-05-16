@@ -5,14 +5,23 @@ import java.util.List;
 
 public class TuringMachine {
 
+    private int id;
     private String name;
+
     private List<State> states;
     private List<Transition> transitions;
 
-    public TuringMachine(String name) {
+    public TuringMachine(int id, String name) {
+
+        this.id = id;
         this.name = name;
+
         this.states = new ArrayList<>();
         this.transitions = new ArrayList<>();
+    }
+
+    public int getId() {
+        return id;
     }
 
     public String getName() {
